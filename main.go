@@ -1,46 +1,47 @@
 package main
 
-import (
-	"fmt"
-	"strconv"
-	"strings"
-	"time"
-)
-
-var sobrenome = "teste"
+import "fmt"
 
 func main() {
-	var nome string
-	var dataNascimento string
-	var diaNascimento int
-	var mesNascimento int
-	var anoNascimento int
+	// for i := 0; i < 10; i++ {
+	// 	fmt.Println(i)
+	// }
 
-	fmt.Print("Digite seu nome: \n")
-	fmt.Scanln(&nome) // Definindo nome dinamicamente
+	// i := 0
+	// for i < 10 { // while
+	// 	fmt.Println(i)
+	// 	i++
+	// }
 
-	fmt.Printf("Digite a data de seu nascimento no formato dia/mes/ano %s\n", nome)
-	fmt.Scanln(&dataNascimento) // Definindo nome dinamicamente
+	// i := 0
+	// for i < 10 { // while
+	// 	fmt.Println(i)
+	// 	break
+	// }
 
-	var partes = strings.Split(dataNascimento, "/")
-	diaNascimento, _ = strconv.Atoi(partes[0])
-	mesNascimento, _ = strconv.Atoi(partes[1])
-	anoNascimento, _ = strconv.Atoi(partes[2])
+	// i := 0
+	// for i < 10 { // while
+	// 	if i == 5 {
+	// 		i++
+	// 		continue
+	// 	}
+	// 	fmt.Println(i)
+	// 	i++
+	// }
 
-	var idade = time.Now().Year() - anoNascimento // Calculo para descobrir idade
-	var mesAtual = int(time.Now().Month())        // Capturando o mes atual
-	var diaAtual = int(time.Now().Day())          // Capturando o dia atual
+	for {
+		fmt.Println("Escolhe uma das opções abaixo:")
+		fmt.Println("1) Mostrar um oi na tela")
+		fmt.Println("2) Encerrar")
+		var opcao int
+		fmt.Scanln(&opcao)
 
-	if mesAtual < mesNascimento {
-		idade -= 1
-	} else if diaAtual < diaNascimento {
-		idade -= 1
+		if opcao == 1 {
+			fmt.Println("Oiiiiiiiii")
+		} else if opcao == 2 {
+			break
+		} else {
+			fmt.Println("Opção inválida")
+		}
 	}
-
-	var message string = "Segue os seus dados:\n" // Mensagem padrão
-
-	message += "Nome: " + nome + "\n"                 // Contatenando variável string
-	message += "Idade: " + strconv.Itoa(idade) + "\n" // Contatenando variável string
-
-	fmt.Println(message)
 }
