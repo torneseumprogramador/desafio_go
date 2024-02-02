@@ -3,45 +3,43 @@ package main
 import "fmt"
 
 func main() {
-	// for i := 0; i < 10; i++ {
-	// 	fmt.Println(i)
-	// }
 
-	// i := 0
-	// for i < 10 { // while
-	// 	fmt.Println(i)
-	// 	i++
-	// }
+	// var i int = 42
 
-	// i := 0
-	// for i < 10 { // while
-	// 	fmt.Println(i)
-	// 	break
-	// }
+	// var p *int // ponteiro definido
+	// p = &i     // passagem da referencia de i
 
-	// i := 0
-	// for i < 10 { // while
-	// 	if i == 5 {
-	// 		i++
-	// 		continue
-	// 	}
-	// 	fmt.Println(i)
-	// 	i++
-	// }
+	// var t *int // ponteiro definido
+	// t = &i     // passagem da referencia de i
 
-	for {
-		fmt.Println("Escolhe uma das opções abaixo:")
-		fmt.Println("1) Mostrar um oi na tela")
-		fmt.Println("2) Encerrar")
-		var opcao int
-		fmt.Scanln(&opcao)
+	// var u *int // ponteiro definido
+	// u = &i     // passagem da referencia de i
 
-		if opcao == 1 {
-			fmt.Println("Oiiiiiiiii")
-		} else if opcao == 2 {
-			break
-		} else {
-			fmt.Println("Opção inválida")
-		}
-	}
+	// i = 20
+
+	// *p = 30
+
+	// fmt.Printf("Valor de i (%d) o endereço de memória (%p)\n", i, &p)
+	// fmt.Printf("Valor de p (%d) o endereço de memória (%p)\n", *p, p)
+	// fmt.Printf("Valor de t (%d) o endereço de memória (%p)\n", *t, t)
+	// fmt.Printf("Valor de u (%d) o endereço de memória (%p)\n", *u, u)
+
+	// fmt.Println("======== valor por copia ============")
+
+	fmt.Println("======== valor por referencia ============")
+
+	t := 42
+	w := &t
+
+	fmt.Printf("Valor de t (%d) o endereço de memória (%p)\n", t, &t)
+	fmt.Printf("Valor de w (%d) o endereço de memória (%p)\n", *w, w)
+
+	fmt.Println("======== valor por copia ============")
+
+	x := 42
+	z := x
+
+	fmt.Printf("Valor de x (%d) o endereço de memória (%p)\n", x, &x)
+	fmt.Printf("Valor de z (%d) o endereço de memória (%p)\n", z, &z)
+
 }
