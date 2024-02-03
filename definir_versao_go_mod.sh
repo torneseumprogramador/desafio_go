@@ -1,1 +1,1 @@
-go mod init aula
+go mod init aula_go

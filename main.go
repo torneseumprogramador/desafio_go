@@ -1,45 +1,35 @@
 package main
 
-import "fmt"
+import (
+	"aula_go/modulos/aniversario"
+	"aula_go/modulos/com_retorno"
+	"aula_go/modulos/void"
+	"fmt"
+)
+
+// PascalCase <- para funções de módulos
+// camelCase <- para função interna
+// snake_case underscore_case underline_case <- variáveis
 
 func main() {
 
-	// var i int = 42
+	nomeFormatado := com_retorno.FormataString("Danilo")
 
-	// var p *int // ponteiro definido
-	// p = &i     // passagem da referencia de i
+	fmt.Printf("%s", nomeFormatado)
 
-	// var t *int // ponteiro definido
-	// t = &i     // passagem da referencia de i
+	void.ImprimirValor()
 
-	// var u *int // ponteiro definido
-	// u = &i     // passagem da referencia de i
+	fmt.Println("--------------")
 
-	// i = 20
+	var nome string
+	var dataAniversario string
 
-	// *p = 30
+	fmt.Println("Digite seu nome")
+	fmt.Scanln(&nome)
 
-	// fmt.Printf("Valor de i (%d) o endereço de memória (%p)\n", i, &p)
-	// fmt.Printf("Valor de p (%d) o endereço de memória (%p)\n", *p, p)
-	// fmt.Printf("Valor de t (%d) o endereço de memória (%p)\n", *t, t)
-	// fmt.Printf("Valor de u (%d) o endereço de memória (%p)\n", *u, u)
+	fmt.Println("Digite sua data de aniversário no formato: dd/mm/aaaa")
+	fmt.Scanln(&dataAniversario)
 
-	// fmt.Println("======== valor por copia ============")
-
-	fmt.Println("======== valor por referencia ============")
-
-	t := 42
-	w := &t
-
-	fmt.Printf("Valor de t (%d) o endereço de memória (%p)\n", t, &t)
-	fmt.Printf("Valor de w (%d) o endereço de memória (%p)\n", *w, w)
-
-	fmt.Println("======== valor por copia ============")
-
-	x := 42
-	z := x
-
-	fmt.Printf("Valor de x (%d) o endereço de memória (%p)\n", x, &x)
-	fmt.Printf("Valor de z (%d) o endereço de memória (%p)\n", z, &z)
-
+	nome, idade, diasFaltamAniversario, horasFaltamAniversario := aniversario.QuantosDiasFaltamParaSeuAniversario(nome, dataAniversario)
+	fmt.Printf("%s, você tem %d anos e faltam %d dias e %d horas para o seu aniversário\n", nome, idade, diasFaltamAniversario, horasFaltamAniversario)
 }

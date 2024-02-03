@@ -1,4 +1,4 @@
-package exercicos
+package main
 
 import "fmt"
 
