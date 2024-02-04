@@ -1,35 +1,29 @@
 package main
 
-import (
-	"aula_go/modulos/aniversario"
-	"aula_go/modulos/com_retorno"
-	"aula_go/modulos/void"
-	"fmt"
-)
+import "fmt"
 
-// PascalCase <- para funções de módulos
-// camelCase <- para função interna
-// snake_case underscore_case underline_case <- variáveis
+type PessoaFisica struct {
+	Nome string
+	CPF  string
+}
+
+type PessoaFisicaNova struct {
+	PessoaFisica // Composição, ao invés de herança
+	Endereco     string
+}
 
 func main() {
+	// Em Go, a "herança" é realizada através de um conceito chamado de composição.
 
-	nomeFormatado := com_retorno.FormataString("Danilo")
+	p := PessoaFisicaNova{
+		PessoaFisica: PessoaFisica{
+			Nome: "Teste",
+			CPF:  "3232233223",
+		},
+		Endereco: "Endereço aqui",
+	}
 
-	fmt.Printf("%s", nomeFormatado)
-
-	void.ImprimirValor()
-
-	fmt.Println("--------------")
-
-	var nome string
-	var dataAniversario string
-
-	fmt.Println("Digite seu nome")
-	fmt.Scanln(&nome)
-
-	fmt.Println("Digite sua data de aniversário no formato: dd/mm/aaaa")
-	fmt.Scanln(&dataAniversario)
-
-	nome, idade, diasFaltamAniversario, horasFaltamAniversario := aniversario.QuantosDiasFaltamParaSeuAniversario(nome, dataAniversario)
-	fmt.Printf("%s, você tem %d anos e faltam %d dias e %d horas para o seu aniversário\n", nome, idade, diasFaltamAniversario, horasFaltamAniversario)
+	fmt.Println(p.Nome) // Acesso direto graças à composição
+	fmt.Println(p.CPF)
+	fmt.Println(p.Endereco)
 }
