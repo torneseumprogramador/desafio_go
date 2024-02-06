@@ -7,6 +7,10 @@ type PessoaFisica struct {
 	CPF  string
 }
 
+func (pf PessoaFisica) ImprimeNome() {
+	fmt.Println("Nome:", pf.Nome)
+}
+
 type PessoaFisicaNova struct {
 	PessoaFisica // Composição, ao invés de herança
 	Endereco     string
@@ -26,4 +30,6 @@ func main() {
 	fmt.Println(p.Nome) // Acesso direto graças à composição
 	fmt.Println(p.CPF)
 	fmt.Println(p.Endereco)
+
+	p.ImprimeNome()
 }
