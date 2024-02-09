@@ -64,7 +64,7 @@ func main() {
 		// 	fmt.Printf("Erro validado CampoVazioError: %s\n", err.Error())
 		// } else if _, ok := err.(*CampoUnicoErros); ok {
 		// 	fmt.Printf("Erro validado CampoUnicoErros: %s\n", err.Error())
-		// } else {
+		// } else
 		// 	fmt.Println("Erro genérico:", err.Error())
 		// }
 	}
