@@ -60,7 +60,7 @@ func AlterarPet() {
 		return
 	}
 
-	petCadastrado, _ := localizaPetPorId(id)
+	petCadastrado, _ := servicos.BuscarPorId(models.ListaDePet, id)
 
 	if petCadastrado == nil {
 		fmt.Println("Pet não encontrado.")
@@ -72,8 +72,19 @@ func AlterarPet() {
 	mostrarPet(petCadastrado)
 	fmt.Println(strings.Repeat("-", 40))
 
-	capturaNomeDonoTipo(petCadastrado)
+	var petParaAlterar models.Pet
+	capturaNomeDonoTipo(&petParaAlterar)
+	petParaAlterar.Id = petCadastrado.Id
 
+	erro := servicos.Alterar(&models.ListaDePet, petParaAlterar)
+	if erro != nil {
+		display.LimparTela()
+		fmt.Println(erro.Error())
+		display.Espera(2)
+		return
+	}
+
+	display.LimparTela()
 	fmt.Println("Alteração de Pet realizada com sucesso.")
 	display.Espera(2)
 }
@@ -92,7 +103,7 @@ func ExcluirPet() {
 		return
 	}
 
-	pet, i := localizaPetPorId(id)
+	pet, i := servicos.BuscarPorId(models.ListaDePet, id)
 
 	if pet == nil {
 		fmt.Println("Pet não encontrado.")
@@ -107,7 +118,14 @@ func ExcluirPet() {
 	fmt.Println("Deseja realmente excluir ?\ns - Sim\nn - para Não")
 	opcao := display.LerDados()
 	if opcao == "s" {
-		models.ListaDePet = append(models.ListaDePet[:i], models.ListaDePet[i+1:]...)
+		listaNova, erro := servicos.Excluir(models.ListaDePet, i)
+		models.ListaDePet = listaNova
+		if erro != nil {
+			display.LimparTela()
+			fmt.Println(erro.Error())
+			display.Espera(2)
+			return
+		}
 		display.LimparTela()
 		fmt.Println("Pet excluído com sucesso.")
 		display.Espera(2)

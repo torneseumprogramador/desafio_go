@@ -23,6 +23,11 @@ func Alterar(pets *[]models.Pet, pet models.Pet) error {
 		return errors.New("Pet não encontrado")
 	}
 
+	erro := validaCampos(&pet)
+	if erro != nil {
+		return erro
+	}
+
 	petDoDB.Nome = pet.Nome
 	petDoDB.Dono = pet.Dono
 	petDoDB.Tipo = pet.Tipo

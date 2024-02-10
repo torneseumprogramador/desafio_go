@@ -203,3 +203,22 @@ func TestAlterar(t *testing.T) {
 		t.Errorf("Erro, a alteração não foi aplicada da lista")
 	}
 }
+
+func TestAlterarItemSemNome(t *testing.T) {
+	// Arrange (prepara os itens para iniciar o teste)
+	var pets []models.Pet = listaCom2Pets()
+	petAlteracao := models.Pet{
+		Id:   1,
+		Nome: "",
+		Dono: "Maria",
+		Tipo: enums.Gato,
+	}
+
+	// Act (Roda a função que irá ser testada)
+	erro := Alterar(&pets, petAlteracao)
+
+	// Assert (Verifica o resultado sobre o teste)
+	if erro == nil {
+		t.Errorf("Erro, deixou alterar pet sem nome")
+	}
+}
