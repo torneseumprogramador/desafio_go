@@ -15,7 +15,11 @@
                 </div>
                 <div class="form-group">
                     <label for="petDono">Dono</label>
-                    <input type="text" class="form-control" id="petDono" name="dono" value="{{ .pet.Dono }}" placeholder="Digite o nome do Dono">
+                    <select class="form-control" id="petDonoId" name="dono_id">
+                      {{range .donos}}
+                        <option value="{{.Id}}" {{if eq $.pet.DonoId .Id}}selected{{end}}>{{.Nome}}</option>
+                      {{end}}
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="petTipo">Tipo</label>

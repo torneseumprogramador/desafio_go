@@ -3,15 +3,19 @@ package servicos
 import (
 	"encoding/json"
 	"errors"
+	"http_gin/src/model_views"
 	"http_gin/src/models"
 	"os"
+	"strings"
 
 	"github.com/google/uuid"
 )
 
-const CAMINHO_JSON_PATS = "pets.json"
+const CAMINHO_JSON_PATS = "db/pets.json"
 
-func ListaDePetsJson() ([]models.Pet, error) {
+type PetServico struct{}
+
+func (ps *PetServico) Lista() ([]models.Pet, error) {
 	var pets []models.Pet
 
 	bytes, err := os.ReadFile(CAMINHO_JSON_PATS)
@@ -30,14 +34,43 @@ func ListaDePetsJson() ([]models.Pet, error) {
 	return pets, nil
 }
 
-func BuscarPorIdJson(id string) *models.Pet {
-	pets, _ := ListaDePetsJson()
-	pet, _ := buscarPorIdStruct(pets, id)
+func (ps *PetServico) ListaPetView(ds DonoServico) ([]model_views.PetView, error) {
+	var pets []models.Pet
+	var pets_views []model_views.PetView
+
+	bytes, err := os.ReadFile(CAMINHO_JSON_PATS)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return []model_views.PetView{}, nil // Retorna slice vazia se o arquivo não existir
+		}
+		return nil, err
+	}
+
+	err = json.Unmarshal(bytes, &pets)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, pet := range pets {
+
+		petView := model_views.PetView{}
+		petView.Id = pet.Id
+		petView.Nome = pet.Nome
+		petView.DonoId = pet.DonoId
+		petView.Dono = ds.BuscarPorId(pet.DonoId).Nome
+
+		pets_views = append(pets_views, petView)
+	}
+	return pets_views, nil
+}
+
+func (ps *PetServico) BuscarPorId(id string) *models.Pet {
+	pets, _ := ps.Lista()
+	pet, _ := ps.buscarPorIdStruct(pets, id)
 	return pet
 }
 
-// salvarPets no arquivo
-func SalvarPets(pets []models.Pet) error {
+func (ps *PetServico) Salvar(pets []models.Pet) error {
 	bytes, err := json.Marshal(pets)
 	if err != nil {
 		return err
@@ -46,9 +79,8 @@ func SalvarPets(pets []models.Pet) error {
 	return os.WriteFile(CAMINHO_JSON_PATS, bytes, 0644)
 }
 
-// Adicionar um pet ao arquivo
-func AdicionarJson(pet models.Pet) error {
-	pets, err := ListaDePetsJson()
+func (ps *PetServico) Adicionar(pet models.Pet) error {
+	pets, err := ps.Lista()
 	if err != nil {
 		return err
 	}
@@ -57,57 +89,54 @@ func AdicionarJson(pet models.Pet) error {
 		pet.Id = uuid.New().String()
 	}
 
-	erro := ValidaCampos(&pet)
+	erro := ps.validaCampos(&pet)
 	if erro != nil {
 		return erro
 	}
 
 	pets = append(pets, pet)
-	return SalvarPets(pets)
+	return ps.Salvar(pets)
 }
 
-// Alterar um pet no arquivo
-func AlterarJson(pet models.Pet) error {
-	pets, err := ListaDePetsJson()
+func (ps *PetServico) Alterar(pet models.Pet) error {
+	pets, err := ps.Lista()
 	if err != nil {
 		return err
 	}
 
-	index, err := buscarPorId(pets, pet.Id)
+	index, err := ps.buscarPorId(pets, pet.Id)
 	if err != nil {
 		return err
 	}
 
-	erro := ValidaCampos(&pet)
+	erro := ps.validaCampos(&pet)
 	if erro != nil {
 		return erro
 	}
 
 	pets[index].Nome = pet.Nome
-	pets[index].Dono = pet.Dono
+	pets[index].DonoId = pet.DonoId
 	pets[index].Tipo = pet.Tipo
 
-	return SalvarPets(pets)
+	return ps.Salvar(pets)
 }
 
-// Excluir um pet do arquivo
-func ExcluirJson(id string) error {
-	pets, err := ListaDePetsJson()
+func (ps *PetServico) Excluir(id string) error {
+	pets, err := ps.Lista()
 	if err != nil {
 		return err
 	}
 
-	index, err := buscarPorId(pets, id)
+	index, err := ps.buscarPorId(pets, id)
 	if err != nil {
 		return err
 	}
 
 	pets = append(pets[:index], pets[index+1:]...)
-	return SalvarPets(pets)
+	return ps.Salvar(pets)
 }
 
-// BuscarPorId busca um pet pelo ID
-func buscarPorId(pets []models.Pet, id string) (int, error) {
+func (ps *PetServico) buscarPorId(pets []models.Pet, id string) (int, error) {
 	for i, pet := range pets {
 		if pet.Id == id {
 			return i, nil
@@ -117,8 +146,21 @@ func buscarPorId(pets []models.Pet, id string) (int, error) {
 	return -1, errors.New("Pet não encontrado")
 }
 
-// BuscarPorId busca um pet pelo ID
-func buscarPorIdStruct(pets []models.Pet, id string) (*models.Pet, int) {
+func (ps *PetServico) BuscarPorDonoId(id string) []models.Pet {
+	pets := []models.Pet{}
+
+	lista, _ := ps.Lista()
+
+	for _, pet := range lista {
+		if pet.Id == id {
+			pets = append(pets, pet)
+		}
+	}
+
+	return pets
+}
+
+func (ps *PetServico) buscarPorIdStruct(pets []models.Pet, id string) (*models.Pet, int) {
 	for i, pet := range pets {
 		if pet.Id == id {
 			return &pet, i
@@ -126,4 +168,20 @@ func buscarPorIdStruct(pets []models.Pet, id string) (*models.Pet, int) {
 	}
 
 	return nil, -1
+}
+
+func (ps *PetServico) validaCampos(pet *models.Pet) error {
+	if pet.Id == "" {
+		return errors.New("O ID de identificação, não pode ser vazio")
+	}
+
+	if strings.TrimSpace(pet.Nome) == "" {
+		return errors.New("O nome do pet é obrigatório")
+	}
+
+	if strings.TrimSpace(pet.DonoId) == "" {
+		return errors.New("O dono do pet é obrigatório")
+	}
+
+	return nil
 }

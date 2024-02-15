@@ -8,7 +8,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func HomeIndex(c *gin.Context) {
+type HomeController struct{}
+
+func (hc *HomeController) Index(c *gin.Context) {
 	c.HTML(
 		http.StatusOK,
 		"main.tmpl.html",
