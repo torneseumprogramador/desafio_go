@@ -7,8 +7,8 @@
         <div class="col-lg-12 d-flex flex-column justify-content-center align-items-stretch  order-2 order-lg-1">
 
           <div class="content">
-            <h2>Registro de Pet</h2>
-            <form action="/pets/cadastrar" method="POST">
+            <h2>{{ .titulo }}</h2>
+            <form action="{{ .action }}" method="POST">
                 <div class="form-group">
                     <label for="petNome">Nome</label>
                     <input type="text" class="form-control" id="petNome" value="{{ .pet.Nome }}" name="nome" placeholder="Digite o nome do Pet">
@@ -34,7 +34,7 @@
                 {{end}}
                 <br>
 
-                <button type="submit" class="btn btn-primary">Registrar</button>
+                <button type="submit" class="btn btn-primary">Salvar</button>
                 <a href="/pets" class="btn btn-default">Voltar</a>
             </form>
           </div>

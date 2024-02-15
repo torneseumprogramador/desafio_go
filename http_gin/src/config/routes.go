@@ -12,4 +12,7 @@ func Routes(r *gin.Engine) {
 	r.GET("/pets", controllers.PetsIndex)
 	r.GET("/pets/novo", controllers.PetsNovo)
 	r.POST("/pets/cadastrar", controllers.PetsCadastrar)
+	r.GET("/pets/:id/excluir", controllers.PetsExcluir)
+	r.GET("/pets/:id/editar", controllers.PetsEditar)
+	r.POST("/pets/:id/alterar", controllers.PetsAlterar)
 }
