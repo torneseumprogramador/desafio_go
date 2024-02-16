@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"fmt"
 	"html/template"
+	"http_gin/src/database"
 	"http_gin/src/libs"
 	"http_gin/src/models"
 	"http_gin/src/servicos"
@@ -13,7 +15,8 @@ import (
 type DonosController struct{}
 
 func (pc *DonosController) Index(c *gin.Context) {
-	ps := servicos.DonoServico{}
+	db, _ := database.GetDB()
+	ps := servicos.DonoServico{DB: db}
 	donos, _ := ps.Lista()
 
 	c.HTML(
@@ -62,7 +65,8 @@ func (pc *DonosController) Cadastrar(c *gin.Context) {
 		Telefone: c.Request.FormValue("telefone"),
 	}
 
-	ps := servicos.DonoServico{}
+	db, _ := database.GetDB()
+	ps := servicos.DonoServico{DB: db}
 	erro := ps.Adicionar(dono)
 
 	if erro == nil {
@@ -94,14 +98,22 @@ func (pc *DonosController) Cadastrar(c *gin.Context) {
 func (pc *DonosController) Excluir(c *gin.Context) {
 	id := c.Param("id")
 
-	ps := servicos.DonoServico{}
+	db, _ := database.GetDB()
+	ps := servicos.DonoServico{DB: db}
 	ps.Excluir(id)
 	c.Redirect(302, "/donos")
 }
 
 func (pc *DonosController) Editar(c *gin.Context) {
-	ps := servicos.DonoServico{}
-	dono := ps.BuscarPorId(c.Param("id"))
+	db, _ := database.GetDB()
+	ps := servicos.DonoServico{DB: db}
+	dono, erro := ps.BuscarPorId(c.Param("id"))
+
+	if erro != nil {
+		fmt.Println("Erro ao executar instrução sql ", erro.Error())
+		c.Redirect(302, "/donos")
+		return
+	}
 
 	if dono == nil {
 		c.Redirect(302, "/donos")
@@ -130,8 +142,15 @@ func (pc *DonosController) Editar(c *gin.Context) {
 }
 
 func (pc *DonosController) Alterar(c *gin.Context) {
-	ps := servicos.DonoServico{}
-	dono := ps.BuscarPorId(c.Param("id"))
+	db, _ := database.GetDB()
+	ps := servicos.DonoServico{DB: db}
+	dono, erro := ps.BuscarPorId(c.Param("id"))
+
+	if erro != nil {
+		fmt.Println("Erro ao executar instrução sql ", erro.Error())
+		c.Redirect(302, "/donos")
+		return
+	}
 
 	if dono == nil {
 		c.Redirect(302, "/donos")
@@ -141,9 +160,10 @@ func (pc *DonosController) Alterar(c *gin.Context) {
 	dono.Nome = c.Request.FormValue("nome")
 	dono.Telefone = c.Request.FormValue("telefone")
 
-	erro := ps.Alterar(*dono)
+	erroAlterar := ps.Alterar(*dono)
 
-	if erro == nil {
+	if erroAlterar == nil {
+		fmt.Println("Erro ao executar instrução sql ", erroAlterar.Error())
 		c.Redirect(302, "/donos")
 		return
 	}

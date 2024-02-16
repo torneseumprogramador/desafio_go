@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"fmt"
 	"html/template"
+	"http_gin/src/database"
 	"http_gin/src/libs"
 	"http_gin/src/models"
 	"http_gin/src/servicos"
@@ -10,12 +12,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func admServicoMysql() *servicos.AdministradorServicoMySql {
+	db, _ := database.GetDB()
+	return &servicos.AdministradorServicoMySql{DB: db}
+}
+
+// TODO -> proxima aula
+// func admServicoJson() *servicos.AdministradorServicoMySql {
+// 	db, _ := database.GetDB()
+// 	return &servicos.AdministradorServicoMySql{DB: db}
+// }
+
 type AdministradoresController struct{}
 
 func (pc *AdministradoresController) Index(c *gin.Context) {
-	ps := servicos.AdministradorServico{}
-	administradores, _ := ps.Lista()
+	repo := servicos.NovoRepositorio[models.Administrador](admServicoMysql())
 
+	administradores, _ := repo.Servico.Lista()
 	c.HTML(
 		http.StatusOK,
 		"main.tmpl.html",
@@ -63,8 +76,8 @@ func (pc *AdministradoresController) Cadastrar(c *gin.Context) {
 		Senha: c.Request.FormValue("senha"),
 	}
 
-	ps := servicos.AdministradorServico{}
-	erro := ps.Adicionar(administrador)
+	repo := servicos.NovoRepositorio[models.Administrador](admServicoMysql())
+	erro := repo.Servico.Adicionar(administrador)
 
 	if erro == nil {
 		c.Redirect(302, "/administradores")
@@ -95,14 +108,20 @@ func (pc *AdministradoresController) Cadastrar(c *gin.Context) {
 func (pc *AdministradoresController) Excluir(c *gin.Context) {
 	id := c.Param("id")
 
-	ps := servicos.AdministradorServico{}
-	ps.Excluir(id)
+	repo := servicos.NovoRepositorio[models.Administrador](admServicoMysql())
+	repo.Servico.Excluir(id)
 	c.Redirect(302, "/administradores")
 }
 
 func (pc *AdministradoresController) Editar(c *gin.Context) {
-	ps := servicos.AdministradorServico{}
-	administrador := ps.BuscarPorId(c.Param("id"))
+	repo := servicos.NovoRepositorio[models.Administrador](admServicoMysql())
+	administrador, erro := repo.Servico.BuscarPorId(c.Param("id"))
+
+	if erro != nil {
+		fmt.Println("Erro ao executar instrução sql ", erro.Error())
+		c.Redirect(302, "/administradores")
+		return
+	}
 
 	if administrador == nil {
 		c.Redirect(302, "/administradores")
@@ -131,8 +150,14 @@ func (pc *AdministradoresController) Editar(c *gin.Context) {
 }
 
 func (pc *AdministradoresController) Alterar(c *gin.Context) {
-	ps := servicos.AdministradorServico{}
-	administrador := ps.BuscarPorId(c.Param("id"))
+	repo := servicos.NovoRepositorio[models.Administrador](admServicoMysql())
+	administrador, erro := repo.Servico.BuscarPorId(c.Param("id"))
+
+	if erro != nil {
+		fmt.Println("Erro ao executar instrução sql ", erro.Error())
+		c.Redirect(302, "/administradores")
+		return
+	}
 
 	if administrador == nil {
 		c.Redirect(302, "/administradores")
@@ -143,9 +168,10 @@ func (pc *AdministradoresController) Alterar(c *gin.Context) {
 	administrador.Email = c.Request.FormValue("email")
 	administrador.Senha = c.Request.FormValue("senha")
 
-	erro := ps.Alterar(*administrador)
+	erroAlterar := repo.Servico.Alterar(*administrador)
 
-	if erro == nil {
+	if erroAlterar == nil {
+		fmt.Println("Erro ao executar instrução sql ", erroAlterar.Error())
 		c.Redirect(302, "/administradores")
 		return
 	}

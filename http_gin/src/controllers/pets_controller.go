@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"fmt"
 	"html/template"
+	"http_gin/src/database"
 	"http_gin/src/enums"
 	"http_gin/src/libs"
 	"http_gin/src/model_views"
@@ -16,7 +18,8 @@ import (
 type PetsController struct{}
 
 func (pc *PetsController) Index(c *gin.Context) {
-	ps := servicos.PetServico{}
+	db, _ := database.GetDB()
+	ps := servicos.PetServico{DB: db}
 	pets, _ := ps.ListaPetView(servicos.DonoServico{})
 
 	c.HTML(
@@ -38,7 +41,8 @@ func (pc *PetsController) Index(c *gin.Context) {
 }
 
 func donos() []models.Dono {
-	ds := servicos.DonoServico{}
+	db, _ := database.GetDB()
+	ds := servicos.DonoServico{DB: db}
 	donos, _ := ds.Lista()
 	return donos
 }
@@ -75,7 +79,8 @@ func (pc *PetsController) Cadastrar(c *gin.Context) {
 		Tipo:   enums.Tipo(tipoInt),
 	}
 
-	ps := servicos.PetServico{}
+	db, _ := database.GetDB()
+	ps := servicos.PetServico{DB: db}
 	erro := ps.Adicionar(pet)
 
 	if erro == nil {
@@ -108,14 +113,22 @@ func (pc *PetsController) Cadastrar(c *gin.Context) {
 func (pc *PetsController) Excluir(c *gin.Context) {
 	id := c.Param("id")
 
-	ps := servicos.PetServico{}
+	db, _ := database.GetDB()
+	ps := servicos.PetServico{DB: db}
 	ps.Excluir(id)
 	c.Redirect(302, "/pets")
 }
 
 func (pc *PetsController) Editar(c *gin.Context) {
-	ps := servicos.PetServico{}
-	pet := ps.BuscarPorId(c.Param("id"))
+	db, _ := database.GetDB()
+	ps := servicos.PetServico{DB: db}
+	pet, erro := ps.BuscarPorId(c.Param("id"))
+
+	if erro != nil {
+		fmt.Println("Erro ao executar instrução sql ", erro.Error())
+		c.Redirect(302, "/pets")
+		return
+	}
 
 	if pet == nil {
 		c.Redirect(302, "/pets")
@@ -145,8 +158,15 @@ func (pc *PetsController) Editar(c *gin.Context) {
 }
 
 func (pc *PetsController) Alterar(c *gin.Context) {
-	ps := servicos.PetServico{}
-	pet := ps.BuscarPorId(c.Param("id"))
+	db, _ := database.GetDB()
+	ps := servicos.PetServico{DB: db}
+	pet, erro := ps.BuscarPorId(c.Param("id"))
+
+	if erro != nil {
+		fmt.Println("Erro ao executar instrução sql ", erro.Error())
+		c.Redirect(302, "/pets")
+		return
+	}
 
 	if pet == nil {
 		c.Redirect(302, "/pets")
@@ -159,9 +179,10 @@ func (pc *PetsController) Alterar(c *gin.Context) {
 	tipoInt, _ := strconv.Atoi(c.Request.FormValue("tipo"))
 	pet.Tipo = enums.Tipo(tipoInt)
 
-	erro := ps.Alterar(*pet)
+	erroAlterar := ps.Alterar(*pet)
 
-	if erro == nil {
+	if erroAlterar == nil {
+		fmt.Println("Erro ao executar instrução sql ", erroAlterar.Error())
 		c.Redirect(302, "/pets")
 		return
 	}
