@@ -1,4 +1,4 @@
-package servicos
+package repositorios
 
 import (
 	"database/sql"
@@ -10,15 +10,15 @@ import (
 	"github.com/google/uuid"
 )
 
-type DonoServico struct {
+type DonoRepositorioMySql struct {
 	DB *sql.DB
 }
 
 // Lista todos os donos
-func (ds *DonoServico) Lista() ([]models.Dono, error) {
+func (dr *DonoRepositorioMySql) Lista() ([]models.Dono, error) {
 	var donos []models.Dono
 
-	rows, err := ds.DB.Query("SELECT id, nome, telefone FROM donos")
+	rows, err := dr.DB.Query("SELECT id, nome, telefone FROM donos")
 	if err != nil {
 		return nil, err
 	}
@@ -36,28 +36,28 @@ func (ds *DonoServico) Lista() ([]models.Dono, error) {
 }
 
 // Adiciona um novo dono
-func (ds *DonoServico) Adicionar(dono models.Dono) error {
+func (dr *DonoRepositorioMySql) Adicionar(dono models.Dono) error {
 	if dono.Id == "" {
 		dono.Id = uuid.New().String()
 	}
 
-	erro := ds.validaCampos(&dono)
+	erro := dr.validaCampos(&dono)
 	if erro != nil {
 		return erro
 	}
 
-	_, err := ds.DB.Exec("INSERT INTO donos (id, nome, telefone) VALUES (?, ?, ?)",
+	_, err := dr.DB.Exec("INSERT INTO donos (id, nome, telefone) VALUES (?, ?, ?)",
 		dono.Id, dono.Nome, dono.Telefone)
 
 	return err
 }
 
-func (ds *DonoServico) BuscarPorId(id string) (*models.Dono, error) {
+func (dr *DonoRepositorioMySql) BuscarPorId(id string) (*models.Dono, error) {
 	var dono models.Dono
 
 	// Prepara a consulta SQL para buscar o dono pelo ID
 	query := "SELECT id, nome, telefone FROM donos WHERE id = ?"
-	err := ds.DB.QueryRow(query, id).Scan(&dono.Id, &dono.Nome, &dono.Telefone)
+	err := dr.DB.QueryRow(query, id).Scan(&dono.Id, &dono.Nome, &dono.Telefone)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -72,25 +72,25 @@ func (ds *DonoServico) BuscarPorId(id string) (*models.Dono, error) {
 }
 
 // Altera um dono existente
-func (ds *DonoServico) Alterar(dono models.Dono) error {
-	erro := ds.validaCampos(&dono)
+func (dr *DonoRepositorioMySql) Alterar(dono models.Dono) error {
+	erro := dr.validaCampos(&dono)
 	if erro != nil {
 		return erro
 	}
 
-	_, err := ds.DB.Exec("UPDATE donos SET nome = ?, telefone = ? WHERE id = ?",
+	_, err := dr.DB.Exec("UPDATE donos SET nome = ?, telefone = ? WHERE id = ?",
 		dono.Nome, dono.Telefone, dono.Id)
 
 	return err
 }
 
 // Exclui um dono pelo ID
-func (ds *DonoServico) Excluir(id string) error {
-	_, err := ds.DB.Exec("DELETE FROM donos WHERE id = ?", id)
+func (dr *DonoRepositorioMySql) Excluir(id string) error {
+	_, err := dr.DB.Exec("DELETE FROM donos WHERE id = ?", id)
 	return err
 }
 
-func (ds *DonoServico) validaCampos(dono *models.Dono) error {
+func (dr *DonoRepositorioMySql) validaCampos(dono *models.Dono) error {
 	if dono.Id == "" {
 		return errors.New("O ID de identificação não pode ser vazio")
 	}

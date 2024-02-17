@@ -6,18 +6,27 @@ import (
 	"http_gin/src/database"
 	"http_gin/src/libs"
 	"http_gin/src/models"
+	"http_gin/src/repositorios"
 	"http_gin/src/servicos"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
+func donoRepo() *repositorios.DonoRepositorioMySql {
+	db, _ := database.GetDB()
+	return &repositorios.DonoRepositorioMySql{DB: db}
+}
+
+// func donoRepo() *repositorios.DonoRepositorioJson {
+// 	return &repositorios.DonoRepositorioJson{}
+// }
+
 type DonosController struct{}
 
 func (pc *DonosController) Index(c *gin.Context) {
-	db, _ := database.GetDB()
-	ps := servicos.DonoServico{DB: db}
-	donos, _ := ps.Lista()
+	servico := servicos.NovoCrudServico[models.Dono](donoRepo())
+	donos, _ := servico.Repo.Lista()
 
 	c.HTML(
 		http.StatusOK,
@@ -65,9 +74,8 @@ func (pc *DonosController) Cadastrar(c *gin.Context) {
 		Telefone: c.Request.FormValue("telefone"),
 	}
 
-	db, _ := database.GetDB()
-	ps := servicos.DonoServico{DB: db}
-	erro := ps.Adicionar(dono)
+	servico := servicos.NovoCrudServico[models.Dono](donoRepo())
+	erro := servico.Repo.Adicionar(dono)
 
 	if erro == nil {
 		c.Redirect(302, "/donos")
@@ -98,16 +106,14 @@ func (pc *DonosController) Cadastrar(c *gin.Context) {
 func (pc *DonosController) Excluir(c *gin.Context) {
 	id := c.Param("id")
 
-	db, _ := database.GetDB()
-	ps := servicos.DonoServico{DB: db}
-	ps.Excluir(id)
+	servico := servicos.NovoCrudServico[models.Dono](donoRepo())
+	servico.Repo.Excluir(id)
 	c.Redirect(302, "/donos")
 }
 
 func (pc *DonosController) Editar(c *gin.Context) {
-	db, _ := database.GetDB()
-	ps := servicos.DonoServico{DB: db}
-	dono, erro := ps.BuscarPorId(c.Param("id"))
+	servico := servicos.NovoCrudServico[models.Dono](donoRepo())
+	dono, erro := servico.Repo.BuscarPorId(c.Param("id"))
 
 	if erro != nil {
 		fmt.Println("Erro ao executar instrução sql ", erro.Error())
@@ -142,9 +148,8 @@ func (pc *DonosController) Editar(c *gin.Context) {
 }
 
 func (pc *DonosController) Alterar(c *gin.Context) {
-	db, _ := database.GetDB()
-	ps := servicos.DonoServico{DB: db}
-	dono, erro := ps.BuscarPorId(c.Param("id"))
+	servico := servicos.NovoCrudServico[models.Dono](donoRepo())
+	dono, erro := servico.Repo.BuscarPorId(c.Param("id"))
 
 	if erro != nil {
 		fmt.Println("Erro ao executar instrução sql ", erro.Error())
@@ -160,10 +165,9 @@ func (pc *DonosController) Alterar(c *gin.Context) {
 	dono.Nome = c.Request.FormValue("nome")
 	dono.Telefone = c.Request.FormValue("telefone")
 
-	erroAlterar := ps.Alterar(*dono)
+	erroAlterar := servico.Repo.Alterar(*dono)
 
 	if erroAlterar == nil {
-		fmt.Println("Erro ao executar instrução sql ", erroAlterar.Error())
 		c.Redirect(302, "/donos")
 		return
 	}
@@ -178,7 +182,7 @@ func (pc *DonosController) Alterar(c *gin.Context) {
 				libs.Render(
 					"src/templates/pages/donos/salvar.tmpl.html",
 					map[string]interface{}{
-						"erro":   erro,
+						"erro":   erroAlterar,
 						"dono":   dono,
 						"titulo": "Alterando um Dono",
 						"action": "/donos/" + dono.Id + "/alterar",

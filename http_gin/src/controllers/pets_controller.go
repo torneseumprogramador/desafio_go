@@ -8,6 +8,7 @@ import (
 	"http_gin/src/libs"
 	"http_gin/src/model_views"
 	"http_gin/src/models"
+	"http_gin/src/repositorios"
 	"http_gin/src/servicos"
 	"net/http"
 	"strconv"
@@ -15,12 +16,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func petRepo() *repositorios.PetRepositorioMySql {
+	db, _ := database.GetDB()
+	return &repositorios.PetRepositorioMySql{DB: db}
+}
+
+// func petRepo() *repositorios.PetRepositorioJson {
+// 	return &repositorios.PetRepositorioJson{}
+// }
+
 type PetsController struct{}
 
 func (pc *PetsController) Index(c *gin.Context) {
-	db, _ := database.GetDB()
-	ps := servicos.PetServico{DB: db}
-	pets, _ := ps.ListaPetView(servicos.DonoServico{})
+	servico := servicos.NovoPetServico(petRepo())
+	pets, _ := servico.ListaPetView()
 
 	c.HTML(
 		http.StatusOK,
@@ -41,9 +50,8 @@ func (pc *PetsController) Index(c *gin.Context) {
 }
 
 func donos() []models.Dono {
-	db, _ := database.GetDB()
-	ds := servicos.DonoServico{DB: db}
-	donos, _ := ds.Lista()
+	servico := servicos.NovoCrudServico[models.Dono](donoRepo())
+	donos, _ := servico.Repo.Lista()
 	return donos
 }
 
@@ -79,9 +87,8 @@ func (pc *PetsController) Cadastrar(c *gin.Context) {
 		Tipo:   enums.Tipo(tipoInt),
 	}
 
-	db, _ := database.GetDB()
-	ps := servicos.PetServico{DB: db}
-	erro := ps.Adicionar(pet)
+	servico := servicos.NovoCrudServico[models.Pet](petRepo())
+	erro := servico.Repo.Adicionar(pet)
 
 	if erro == nil {
 		c.Redirect(302, "/pets")
@@ -113,16 +120,14 @@ func (pc *PetsController) Cadastrar(c *gin.Context) {
 func (pc *PetsController) Excluir(c *gin.Context) {
 	id := c.Param("id")
 
-	db, _ := database.GetDB()
-	ps := servicos.PetServico{DB: db}
-	ps.Excluir(id)
+	servico := servicos.NovoCrudServico[models.Pet](petRepo())
+	servico.Repo.Excluir(id)
 	c.Redirect(302, "/pets")
 }
 
 func (pc *PetsController) Editar(c *gin.Context) {
-	db, _ := database.GetDB()
-	ps := servicos.PetServico{DB: db}
-	pet, erro := ps.BuscarPorId(c.Param("id"))
+	servico := servicos.NovoCrudServico[models.Pet](petRepo())
+	pet, erro := servico.Repo.BuscarPorId(c.Param("id"))
 
 	if erro != nil {
 		fmt.Println("Erro ao executar instrução sql ", erro.Error())
@@ -158,9 +163,8 @@ func (pc *PetsController) Editar(c *gin.Context) {
 }
 
 func (pc *PetsController) Alterar(c *gin.Context) {
-	db, _ := database.GetDB()
-	ps := servicos.PetServico{DB: db}
-	pet, erro := ps.BuscarPorId(c.Param("id"))
+	servico := servicos.NovoCrudServico[models.Pet](petRepo())
+	pet, erro := servico.Repo.BuscarPorId(c.Param("id"))
 
 	if erro != nil {
 		fmt.Println("Erro ao executar instrução sql ", erro.Error())
@@ -179,10 +183,9 @@ func (pc *PetsController) Alterar(c *gin.Context) {
 	tipoInt, _ := strconv.Atoi(c.Request.FormValue("tipo"))
 	pet.Tipo = enums.Tipo(tipoInt)
 
-	erroAlterar := ps.Alterar(*pet)
+	erroAlterar := servico.Repo.Alterar(*pet)
 
 	if erroAlterar == nil {
-		fmt.Println("Erro ao executar instrução sql ", erroAlterar.Error())
 		c.Redirect(302, "/pets")
 		return
 	}
@@ -197,7 +200,7 @@ func (pc *PetsController) Alterar(c *gin.Context) {
 				libs.Render(
 					"src/templates/pages/pets/salvar.tmpl.html",
 					map[string]interface{}{
-						"erro":   erro,
+						"erro":   erroAlterar,
 						"pet":    pet,
 						"titulo": "Alterando um Pet",
 						"action": "/pets/" + pet.Id + "/alterar",

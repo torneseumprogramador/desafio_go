@@ -1,4 +1,4 @@
-package servicos
+package repositorios
 
 import (
 	"database/sql"
@@ -7,14 +7,14 @@ import (
 	"reflect"
 )
 
-type GenericService struct {
+type GenericoRepositorioMySql struct {
 	DB    *sql.DB
 	Table string
 	Type  reflect.Type // Tipo da entidade
 }
 
 // Lista implementa a operação de listar entidades.
-func (gs *GenericService) Lista() ([]interface{}, error) {
+func (gs *GenericoRepositorioMySql) Lista() ([]interface{}, error) {
 	rows, err := gs.DB.Query(fmt.Sprintf("SELECT * FROM %s", gs.Table))
 	if err != nil {
 		return nil, err
