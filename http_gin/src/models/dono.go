@@ -1,7 +1,10 @@
 package models
 
+//lint:ignore U1000 reason: Used by ORM to specify table name
 type Dono struct {
-	Id       string
-	Nome     string
-	Telefone string
+	tableName struct{} `table:"donos"`
+
+	Id       string `field:"id"`
+	Nome     string `field:"nome"`
+	Telefone string `field:"telefone"`
 }
