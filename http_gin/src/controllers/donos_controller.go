@@ -28,10 +28,12 @@ func (pc *DonosController) Index(c *gin.Context) {
 	servico := servicos.NovoCrudServico[models.Dono](donoRepo())
 	donos, _ := servico.Repo.Lista()
 
+	adm, _ := c.Get("admin")
 	c.HTML(
 		http.StatusOK,
 		"main.tmpl.html",
 		gin.H{
+			"adm":          adm,
 			"title":        "Donos",
 			"currentRoute": "donos",
 			"content": template.HTML(
@@ -47,10 +49,12 @@ func (pc *DonosController) Index(c *gin.Context) {
 }
 
 func (pc *DonosController) Novo(c *gin.Context) {
+	adm, _ := c.Get("admin")
 	c.HTML(
 		http.StatusOK,
 		"main.tmpl.html",
 		gin.H{
+			"adm":          adm,
 			"title":        "Registro de Dono",
 			"currentRoute": "donos",
 			"content": template.HTML(
@@ -82,10 +86,12 @@ func (pc *DonosController) Cadastrar(c *gin.Context) {
 		return
 	}
 
+	adm, _ := c.Get("admin")
 	c.HTML(
 		http.StatusOK,
 		"main.tmpl.html",
 		gin.H{
+			"adm":          adm,
 			"title":        "Registro de Dono",
 			"currentRoute": "donos",
 			"content": template.HTML(
@@ -126,10 +132,12 @@ func (pc *DonosController) Editar(c *gin.Context) {
 		return
 	}
 
+	adm, _ := c.Get("admin")
 	c.HTML(
 		http.StatusOK,
 		"main.tmpl.html",
 		gin.H{
+			"adm":          adm,
 			"title":        "Alterando Dono",
 			"currentRoute": "donos",
 			"content": template.HTML(
@@ -172,10 +180,12 @@ func (pc *DonosController) Alterar(c *gin.Context) {
 		return
 	}
 
+	adm, _ := c.Get("admin")
 	c.HTML(
 		http.StatusOK,
 		"main.tmpl.html",
 		gin.H{
+			"adm":          adm,
 			"title":        "Alterando um Dono",
 			"currentRoute": "donos",
 			"content": template.HTML(

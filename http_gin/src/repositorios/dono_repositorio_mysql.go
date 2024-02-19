@@ -3,6 +3,7 @@ package repositorios
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"http_gin/src/models"
 	"strings"
 
@@ -24,6 +25,45 @@ func (dr *DonoRepositorioMySql) Lista() ([]models.Dono, error) {
 	}
 	defer rows.Close()
 
+	for rows.Next() {
+		var dono models.Dono
+		if err := rows.Scan(&dono.Id, &dono.Nome, &dono.Telefone); err != nil {
+			return nil, err
+		}
+		donos = append(donos, dono)
+	}
+
+	return donos, nil
+}
+
+func (ar *DonoRepositorioMySql) Where(filtros map[string]string) ([]models.Dono, error) {
+	var donos []models.Dono
+
+	// Verifica se há filtros para aplicar
+	if len(filtros) == 0 {
+		return nil, fmt.Errorf("nenhum filtro fornecido")
+	}
+
+	// Constrói a cláusula WHERE dinamicamente
+	var whereClauses []string
+	var valores []interface{}
+
+	for chave, valor := range filtros {
+		whereClauses = append(whereClauses, fmt.Sprintf("%s = ?", chave))
+		valores = append(valores, valor)
+	}
+
+	queryBase := "SELECT id, nome, email, senha FROM donos"
+	queryWhere := " WHERE " + strings.Join(whereClauses, " AND ")
+
+	// Executa a consulta com os filtros aplicados
+	rows, err := ar.DB.Query(queryBase+queryWhere, valores...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	// Processa os resultados
 	for rows.Next() {
 		var dono models.Dono
 		if err := rows.Scan(&dono.Id, &dono.Nome, &dono.Telefone); err != nil {

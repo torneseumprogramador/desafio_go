@@ -1,5 +1,4 @@
-- Criar restrição de login com cookie
-- Cryptografia de senha
+- Envio de troca de senha por email
 
 - API
 - ORM

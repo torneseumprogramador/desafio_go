@@ -3,6 +3,8 @@ package repositorios
 import (
 	"database/sql"
 	"errors"
+	"fmt"
+	"http_gin/src/libs"
 	"http_gin/src/models"
 	"strings"
 
@@ -12,6 +14,45 @@ import (
 
 type AdministradorRepositorioMySql struct {
 	DB *sql.DB
+}
+
+func (ar *AdministradorRepositorioMySql) Where(filtros map[string]string) ([]models.Administrador, error) {
+	var administradores []models.Administrador
+
+	// Verifica se há filtros para aplicar
+	if len(filtros) == 0 {
+		return nil, fmt.Errorf("nenhum filtro fornecido")
+	}
+
+	// Constrói a cláusula WHERE dinamicamente
+	var whereClauses []string
+	var valores []interface{}
+
+	for chave, valor := range filtros {
+		whereClauses = append(whereClauses, fmt.Sprintf("%s = ?", chave))
+		valores = append(valores, valor)
+	}
+
+	queryBase := "SELECT id, nome, email, senha FROM administradores"
+	queryWhere := " WHERE " + strings.Join(whereClauses, " AND ")
+
+	// Executa a consulta com os filtros aplicados
+	rows, err := ar.DB.Query(queryBase+queryWhere, valores...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	// Processa os resultados
+	for rows.Next() {
+		var adm models.Administrador
+		if err := rows.Scan(&adm.Id, &adm.Nome, &adm.Email, &adm.Senha); err != nil {
+			return nil, err
+		}
+		administradores = append(administradores, adm)
+	}
+
+	return administradores, nil
 }
 
 // Lista todos os administradores
@@ -60,6 +101,10 @@ func (ar *AdministradorRepositorioMySql) Adicionar(adm models.Administrador) err
 		adm.Id = uuid.New().String()
 	}
 
+	if !libs.IsCrypto(adm.Senha) {
+		adm.Senha = libs.Crypto(adm.Senha)
+	}
+
 	erro := ar.validaCampos(&adm)
 	if erro != nil {
 		return erro
@@ -76,6 +121,10 @@ func (ar *AdministradorRepositorioMySql) Alterar(adm models.Administrador) error
 	erro := ar.validaCampos(&adm)
 	if erro != nil {
 		return erro
+	}
+
+	if !libs.IsCrypto(adm.Senha) {
+		adm.Senha = libs.Crypto(adm.Senha)
 	}
 
 	_, err := ar.DB.Exec("UPDATE administradores SET nome = ?, email = ?, senha = ? WHERE id = ?",

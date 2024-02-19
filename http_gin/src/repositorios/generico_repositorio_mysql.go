@@ -42,6 +42,42 @@ func (gs *GenericoRepositorioMySql[T]) getTableName() string {
 	return ""
 }
 
+func (gs *GenericoRepositorioMySql[T]) Where(condicoes map[string]string) ([]T, error) {
+	var whereClauses []string
+	var valores []interface{}
+
+	for chave, valor := range condicoes {
+		whereClauses = append(whereClauses, fmt.Sprintf("%s = ?", chave))
+		valores = append(valores, valor)
+	}
+
+	queryWhere := ""
+	if len(whereClauses) > 0 {
+		queryWhere = " WHERE " + strings.Join(whereClauses, " AND ")
+	}
+
+	query := fmt.Sprintf("SELECT * FROM %s%s", gs.getTableName(), queryWhere)
+
+	rows, err := gs.DB.Query(query, valores...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var result []T
+	for rows.Next() {
+		var entidade T
+		err := scanEntity(rows, &entidade)
+		if err != nil {
+			log.Println("Erro ao escanear a entidade:", err)
+			continue
+		}
+		result = append(result, entidade)
+	}
+
+	return result, nil
+}
+
 // Lista implementa a operação de listar entidades do tipo T.
 func (gs *GenericoRepositorioMySql[T]) Lista() ([]T, error) {
 	rows, err := gs.DB.Query(fmt.Sprintf("SELECT * FROM %s", gs.getTableName()))
@@ -52,10 +88,7 @@ func (gs *GenericoRepositorioMySql[T]) Lista() ([]T, error) {
 
 	var result []T
 	for rows.Next() {
-		var entidade T // T agora é o tipo específico, não interface{}
-
-		// A função Scan deve ser ajustada para receber referências aos campos de entidade
-		// Isso requer conhecimento ou uma interface que todos os T implementem para obter os campos como slice de interface{}
+		var entidade T
 		err := scanEntity(rows, &entidade)
 
 		if err != nil {

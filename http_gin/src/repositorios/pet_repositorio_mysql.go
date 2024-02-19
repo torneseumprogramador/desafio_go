@@ -41,6 +41,45 @@ func (pr *PetRepositorioMySql) ListaPetView() ([]model_views.PetView, error) {
 	return pets, nil
 }
 
+func (ar *PetRepositorioMySql) Where(filtros map[string]string) ([]models.Pet, error) {
+	var pets []models.Pet
+
+	// Verifica se há filtros para aplicar
+	if len(filtros) == 0 {
+		return nil, fmt.Errorf("nenhum filtro fornecido")
+	}
+
+	// Constrói a cláusula WHERE dinamicamente
+	var whereClauses []string
+	var valores []interface{}
+
+	for chave, valor := range filtros {
+		whereClauses = append(whereClauses, fmt.Sprintf("%s = ?", chave))
+		valores = append(valores, valor)
+	}
+
+	queryBase := "SELECT id, nome, email, senha FROM pets"
+	queryWhere := " WHERE " + strings.Join(whereClauses, " AND ")
+
+	// Executa a consulta com os filtros aplicados
+	rows, err := ar.DB.Query(queryBase+queryWhere, valores...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	// Processa os resultados
+	for rows.Next() {
+		var pet models.Pet
+		if err := rows.Scan(&pet.Id, &pet.Nome, &pet.DonoId, &pet.Tipo); err != nil {
+			return nil, err
+		}
+		pets = append(pets, pet)
+	}
+
+	return pets, nil
+}
+
 // Lista todos os pets
 func (pr *PetRepositorioMySql) Lista() ([]models.Pet, error) {
 	var pets []models.Pet

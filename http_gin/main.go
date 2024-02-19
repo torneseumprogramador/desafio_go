@@ -36,7 +36,7 @@ func importar_adm_json(done chan bool) {
 	}
 
 	// Iterando sobre a slice de administradores e inserindo no banco de dados
-	fornecedorGenericoRepo := repositorios.GenericoRepositorioMySql[models.Administrador]{DB: db}
+	fornecedorGenericoRepo := repositorios.AdministradorRepositorioMySql{DB: db}
 	for _, adm := range adms {
 		fornecedorGenericoRepo.Adicionar(adm)
 	}

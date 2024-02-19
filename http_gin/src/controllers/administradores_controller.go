@@ -27,11 +27,13 @@ type AdministradoresController struct{}
 func (pc *AdministradoresController) Index(c *gin.Context) {
 	servico := servicos.NovoCrudServico[models.Administrador](admRepositorio())
 
+	adm, _ := c.Get("admin")
 	administradores, _ := servico.Repo.Lista()
 	c.HTML(
 		http.StatusOK,
 		"main.tmpl.html",
 		gin.H{
+			"adm":          adm,
 			"title":        "Administradores",
 			"currentRoute": "administradores",
 			"content": template.HTML(
@@ -47,10 +49,12 @@ func (pc *AdministradoresController) Index(c *gin.Context) {
 }
 
 func (pc *AdministradoresController) Novo(c *gin.Context) {
+	adm, _ := c.Get("admin")
 	c.HTML(
 		http.StatusOK,
 		"main.tmpl.html",
 		gin.H{
+			"adm":          adm,
 			"title":        "Registro de Administrador",
 			"currentRoute": "administradores",
 			"content": template.HTML(
@@ -83,10 +87,12 @@ func (pc *AdministradoresController) Cadastrar(c *gin.Context) {
 		return
 	}
 
+	adm, _ := c.Get("admin")
 	c.HTML(
 		http.StatusOK,
 		"main.tmpl.html",
 		gin.H{
+			"adm":          adm,
 			"title":        "Registro de Administrador",
 			"currentRoute": "administradores",
 			"content": template.HTML(
@@ -127,10 +133,12 @@ func (pc *AdministradoresController) Editar(c *gin.Context) {
 		return
 	}
 
+	adm, _ := c.Get("admin")
 	c.HTML(
 		http.StatusOK,
 		"main.tmpl.html",
 		gin.H{
+			"adm":          adm,
 			"title":        "Alterando Administrador",
 			"currentRoute": "administradores",
 			"content": template.HTML(
@@ -174,10 +182,12 @@ func (pc *AdministradoresController) Alterar(c *gin.Context) {
 		return
 	}
 
+	adm, _ := c.Get("admin")
 	c.HTML(
 		http.StatusOK,
 		"main.tmpl.html",
 		gin.H{
+			"adm":          adm,
 			"title":        "Alterando um Administrador",
 			"currentRoute": "administradores",
 			"content": template.HTML(

@@ -31,10 +31,12 @@ func (pc *PetsController) Index(c *gin.Context) {
 	servico := servicos.NovoPetServico(petRepo())
 	pets, _ := servico.ListaPetView()
 
+	adm, _ := c.Get("admin")
 	c.HTML(
 		http.StatusOK,
 		"main.tmpl.html",
 		gin.H{
+			"adm":          adm,
 			"title":        "Pets",
 			"currentRoute": "pets",
 			"content": template.HTML(
@@ -56,10 +58,12 @@ func donos() []models.Dono {
 }
 
 func (pc *PetsController) Novo(c *gin.Context) {
+	adm, _ := c.Get("admin")
 	c.HTML(
 		http.StatusOK,
 		"main.tmpl.html",
 		gin.H{
+			"adm":          adm,
 			"title":        "Registro de Pet",
 			"currentRoute": "pets",
 			"content": template.HTML(
@@ -95,10 +99,12 @@ func (pc *PetsController) Cadastrar(c *gin.Context) {
 		return
 	}
 
+	adm, _ := c.Get("admin")
 	c.HTML(
 		http.StatusOK,
 		"main.tmpl.html",
 		gin.H{
+			"adm":          adm,
 			"title":        "Registro de Pet",
 			"currentRoute": "pets",
 			"content": template.HTML(
@@ -140,10 +146,12 @@ func (pc *PetsController) Editar(c *gin.Context) {
 		return
 	}
 
+	adm, _ := c.Get("admin")
 	c.HTML(
 		http.StatusOK,
 		"main.tmpl.html",
 		gin.H{
+			"adm":          adm,
 			"title":        "Alterando Pet",
 			"currentRoute": "pets",
 			"content": template.HTML(
@@ -190,10 +198,12 @@ func (pc *PetsController) Alterar(c *gin.Context) {
 		return
 	}
 
+	adm, _ := c.Get("admin")
 	c.HTML(
 		http.StatusOK,
 		"main.tmpl.html",
 		gin.H{
+			"adm":          adm,
 			"title":        "Alterando um Pet",
 			"currentRoute": "pets",
 			"content": template.HTML(

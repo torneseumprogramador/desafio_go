@@ -6,4 +6,5 @@ type CRUDServico[T any] interface {
 	Adicionar(entidade T) error
 	Alterar(entidade T) error
 	Excluir(id string) error
+	Where(filtro map[string]string) ([]T, error)
 }
