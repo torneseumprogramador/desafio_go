@@ -76,20 +76,25 @@ func (ar *DonoRepositorioMySql) Where(filtros map[string]string) ([]models.Dono,
 }
 
 // Adiciona um novo dono
-func (dr *DonoRepositorioMySql) Adicionar(dono models.Dono) error {
+func (dr *DonoRepositorioMySql) Adicionar(dono models.Dono) (string, error) {
 	if dono.Id == "" {
 		dono.Id = uuid.New().String()
 	}
 
 	erro := dr.validaCampos(&dono)
 	if erro != nil {
-		return erro
+		return "", erro
 	}
 
 	_, err := dr.DB.Exec("INSERT INTO donos (id, nome, telefone) VALUES (?, ?, ?)",
 		dono.Id, dono.Nome, dono.Telefone)
 
-	return err
+	if err != nil {
+		return "", err
+	}
+
+	return dono.Id, nil
+
 }
 
 func (dr *DonoRepositorioMySql) BuscarPorId(id string) (*models.Dono, error) {

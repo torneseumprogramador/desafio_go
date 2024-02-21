@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"http_gin/src/libs"
+	"http_gin/src/model_views"
 	"http_gin/src/models"
 	"strings"
 
@@ -56,6 +57,27 @@ func (ar *AdministradorRepositorioMySql) Where(filtros map[string]string) ([]mod
 }
 
 // Lista todos os administradores
+func (ar *AdministradorRepositorioMySql) ListaAdmView() ([]model_views.AdmView, error) {
+	var administradores []model_views.AdmView
+
+	rows, err := ar.DB.Query("SELECT id, nome, email, super FROM administradores")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var adm model_views.AdmView
+		if err := rows.Scan(&adm.Id, &adm.Nome, &adm.Email, &adm.Super); err != nil {
+			return nil, err
+		}
+		administradores = append(administradores, adm)
+	}
+
+	return administradores, nil
+}
+
+// Lista todos os administradores
 func (ar *AdministradorRepositorioMySql) Lista() ([]models.Administrador, error) {
 	var administradores []models.Administrador
 
@@ -81,7 +103,26 @@ func (ar *AdministradorRepositorioMySql) BuscarPorId(id string) (*models.Adminis
 
 	// Prepara a consulta SQL para buscar o adm pelo ID
 	query := "SELECT id, nome, email, senha, super FROM administradores WHERE id = ?"
-	err := ar.DB.QueryRow(query, id).Scan(&adm.Id, &adm.Nome, &adm.Email, &adm.Senha)
+	err := ar.DB.QueryRow(query, id).Scan(&adm.Id, &adm.Nome, &adm.Email, &adm.Senha, &adm.Super)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// Nenhum resultado encontrado
+			return nil, nil
+		}
+		// Algum outro erro ocorreu
+		return nil, err
+	}
+
+	return &adm, nil
+}
+
+func (ar *AdministradorRepositorioMySql) BuscarPorIdModelView(id string) (*model_views.AdmView, error) {
+	var adm model_views.AdmView
+
+	// Prepara a consulta SQL para buscar o adm pelo ID
+	query := "SELECT id, nome, email, super FROM administradores WHERE id = ?"
+	err := ar.DB.QueryRow(query, id).Scan(&adm.Id, &adm.Nome, &adm.Email, &adm.Super)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -96,7 +137,7 @@ func (ar *AdministradorRepositorioMySql) BuscarPorId(id string) (*models.Adminis
 }
 
 // Adiciona um novo administrador
-func (ar *AdministradorRepositorioMySql) Adicionar(adm models.Administrador) error {
+func (ar *AdministradorRepositorioMySql) Adicionar(adm models.Administrador) (string, error) {
 	if adm.Id == "" {
 		adm.Id = uuid.New().String()
 	}
@@ -107,13 +148,17 @@ func (ar *AdministradorRepositorioMySql) Adicionar(adm models.Administrador) err
 
 	erro := ar.validaCampos(&adm)
 	if erro != nil {
-		return erro
+		return "", erro
 	}
 
 	_, err := ar.DB.Exec("INSERT INTO administradores (id, nome, email, senha) VALUES (?, ?, ?, ?)",
 		adm.Id, adm.Nome, adm.Email, adm.Senha)
 
-	return err
+	if err != nil {
+		return "", err
+	}
+
+	return adm.Id, nil
 }
 
 // Altera um administrador existente

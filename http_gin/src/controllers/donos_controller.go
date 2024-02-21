@@ -2,9 +2,8 @@ package controllers
 
 import (
 	"fmt"
-	"html/template"
+	"http_gin/src/DTOs"
 	"http_gin/src/database"
-	"http_gin/src/libs"
 	"http_gin/src/models"
 	"http_gin/src/repositorios"
 	"http_gin/src/servicos"
@@ -18,95 +17,70 @@ func donoRepo() *repositorios.DonoRepositorioMySql {
 	return &repositorios.DonoRepositorioMySql{DB: db}
 }
 
-// func donoRepo() *repositorios.DonoRepositorioJson {
-// 	return &repositorios.DonoRepositorioJson{}
-// }
-
 type DonosController struct{}
 
 func (pc *DonosController) Index(c *gin.Context) {
 	servico := servicos.NovoCrudServico[models.Dono](donoRepo())
-	donos, _ := servico.Repo.Lista()
+	donos, erro := servico.Repo.Lista()
 
-	adm, _ := c.Get("admin")
-	c.HTML(
-		http.StatusOK,
-		"main.tmpl.html",
-		gin.H{
-			"adm":          adm,
-			"title":        "Donos",
-			"currentRoute": "donos",
-			"content": template.HTML(
-				libs.Render(
-					"src/templates/pages/donos/index.tmpl.html",
-					map[string][]models.Dono{
-						"donos": donos,
-					},
-				),
-			),
-		},
-	)
-}
-
-func (pc *DonosController) Novo(c *gin.Context) {
-	adm, _ := c.Get("admin")
-	c.HTML(
-		http.StatusOK,
-		"main.tmpl.html",
-		gin.H{
-			"adm":          adm,
-			"title":        "Registro de Dono",
-			"currentRoute": "donos",
-			"content": template.HTML(
-				libs.Render(
-					"src/templates/pages/donos/salvar.tmpl.html",
-					map[string]interface{}{
-						"dono":   models.Dono{},
-						"titulo": "Registro de Dono",
-						"action": "/donos/cadastrar",
-					},
-				),
-			),
-		},
-	)
-}
-
-func (pc *DonosController) Cadastrar(c *gin.Context) {
-	dono := models.Dono{
-		Id:       "",
-		Nome:     c.Request.FormValue("nome"),
-		Telefone: c.Request.FormValue("telefone"),
+	if erro != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"erro": erro.Error(),
+		})
 	}
 
-	servico := servicos.NovoCrudServico[models.Dono](donoRepo())
-	erro := servico.Repo.Adicionar(dono)
+	c.JSON(http.StatusOK, donos)
+}
 
-	if erro == nil {
-		c.Redirect(302, "/donos")
+func (pc *DonosController) Mostrar(c *gin.Context) {
+	id := c.Param("id")
+
+	servico := servicos.NovoCrudServico[models.Dono](donoRepo())
+	donoDb, erro := servico.Repo.BuscarPorId(id)
+
+	if erro != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"erro": erro.Error(),
+		})
 		return
 	}
 
-	adm, _ := c.Get("admin")
-	c.HTML(
-		http.StatusOK,
-		"main.tmpl.html",
-		gin.H{
-			"adm":          adm,
-			"title":        "Registro de Dono",
-			"currentRoute": "donos",
-			"content": template.HTML(
-				libs.Render(
-					"src/templates/pages/donos/salvar.tmpl.html",
-					map[string]interface{}{
-						"erro":   erro,
-						"dono":   dono,
-						"titulo": "Registro de Dono",
-						"action": "/donos/cadastrar",
-					},
-				),
-			),
-		},
-	)
+	if donoDb == nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"erro": fmt.Errorf("pet não encontrado"),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, donoDb)
+}
+
+func (pc *DonosController) Cadastrar(c *gin.Context) {
+	var donoDTO DTOs.DonoDTO
+
+	if err := c.BindJSON(&donoDTO); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	dono := models.Dono{
+		Id:       "",
+		Nome:     donoDTO.Nome,
+		Telefone: donoDTO.Telefone,
+	}
+
+	servico := servicos.NovoCrudServico[models.Dono](donoRepo())
+	id, erro := servico.Repo.Adicionar(dono)
+	dono.Id = id
+
+	if erro == nil {
+		c.JSON(http.StatusCreated, dono)
+		return
+	}
+
+	c.JSON(http.StatusBadRequest, gin.H{
+		"erro": erro.Error(),
+	})
 }
 
 func (pc *DonosController) Excluir(c *gin.Context) {
@@ -114,91 +88,47 @@ func (pc *DonosController) Excluir(c *gin.Context) {
 
 	servico := servicos.NovoCrudServico[models.Dono](donoRepo())
 	servico.Repo.Excluir(id)
-	c.Redirect(302, "/donos")
-}
 
-func (pc *DonosController) Editar(c *gin.Context) {
-	servico := servicos.NovoCrudServico[models.Dono](donoRepo())
-	dono, erro := servico.Repo.BuscarPorId(c.Param("id"))
-
-	if erro != nil {
-		fmt.Println("Erro ao executar instrução sql ", erro.Error())
-		c.Redirect(302, "/donos")
-		return
-	}
-
-	if dono == nil {
-		c.Redirect(302, "/donos")
-		return
-	}
-
-	adm, _ := c.Get("admin")
-	c.HTML(
-		http.StatusOK,
-		"main.tmpl.html",
-		gin.H{
-			"adm":          adm,
-			"title":        "Alterando Dono",
-			"currentRoute": "donos",
-			"content": template.HTML(
-				libs.Render(
-					"src/templates/pages/donos/salvar.tmpl.html",
-					map[string]interface{}{
-						"erro":   nil,
-						"dono":   dono,
-						"titulo": "Alterando um Dono",
-						"action": "/donos/" + dono.Id + "/alterar",
-					},
-				),
-			),
-		},
-	)
+	c.JSON(http.StatusNoContent, gin.H{})
 }
 
 func (pc *DonosController) Alterar(c *gin.Context) {
+	id := c.Param("id")
+	var donoDTO DTOs.DonoDTO
+
+	if err := c.BindJSON(&donoDTO); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	servico := servicos.NovoCrudServico[models.Dono](donoRepo())
-	dono, erro := servico.Repo.BuscarPorId(c.Param("id"))
+	donoDb, erro := servico.Repo.BuscarPorId(id)
 
 	if erro != nil {
-		fmt.Println("Erro ao executar instrução sql ", erro.Error())
-		c.Redirect(302, "/donos")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"erro": erro.Error(),
+		})
 		return
 	}
 
-	if dono == nil {
-		c.Redirect(302, "/donos")
+	if donoDb == nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"erro": fmt.Errorf("pet não encontrado"),
+		})
 		return
 	}
 
-	dono.Nome = c.Request.FormValue("nome")
-	dono.Telefone = c.Request.FormValue("telefone")
+	donoDb.Nome = donoDTO.Nome
+	donoDb.Telefone = donoDTO.Telefone
 
-	erroAlterar := servico.Repo.Alterar(*dono)
+	erroAlterar := servico.Repo.Alterar(*donoDb)
 
 	if erroAlterar == nil {
-		c.Redirect(302, "/donos")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"erro": erroAlterar.Error(),
+		})
 		return
 	}
 
-	adm, _ := c.Get("admin")
-	c.HTML(
-		http.StatusOK,
-		"main.tmpl.html",
-		gin.H{
-			"adm":          adm,
-			"title":        "Alterando um Dono",
-			"currentRoute": "donos",
-			"content": template.HTML(
-				libs.Render(
-					"src/templates/pages/donos/salvar.tmpl.html",
-					map[string]interface{}{
-						"erro":   erroAlterar,
-						"dono":   dono,
-						"titulo": "Alterando um Dono",
-						"action": "/donos/" + dono.Id + "/alterar",
-					},
-				),
-			),
-		},
-	)
+	c.JSON(http.StatusOK, donoDb)
 }

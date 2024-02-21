@@ -120,21 +120,24 @@ func (pr *PetRepositorioMySql) BuscarPorId(id string) (*models.Pet, error) {
 	return &pet, nil
 }
 
-// Adiciona um novo pet
-func (pr *PetRepositorioMySql) Adicionar(pet models.Pet) error {
+func (pr *PetRepositorioMySql) Adicionar(pet models.Pet) (string, error) {
 	if pet.Id == "" {
 		pet.Id = uuid.New().String()
 	}
 
 	erro := pr.validaCampos(&pet)
 	if erro != nil {
-		return erro
+		return "", erro
 	}
 
 	_, err := pr.DB.Exec("INSERT INTO pets (id, nome, donoId, tipo) VALUES (?, ?, ?, ?)",
 		pet.Id, pet.Nome, pet.DonoId, pet.Tipo)
 
-	return err
+	if err != nil {
+		return "", err
+	}
+
+	return pet.Id, nil
 }
 
 // Altera um pet existente
