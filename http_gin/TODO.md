@@ -1,6 +1,0 @@
-
-- API
-- ORM
-- JWT
-
-- Deploys
