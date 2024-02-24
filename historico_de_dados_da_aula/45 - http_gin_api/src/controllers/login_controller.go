@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"http_gin/src/DTOs"
 	"http_gin/src/libs"
+	"http_gin/src/model_views"
 	"http_gin/src/models"
 	"http_gin/src/servicos"
 	"net/http"
@@ -15,11 +16,22 @@ import (
 
 type LoginController struct{}
 
+// @Summary Login
+// @Description Autentica um administrador e retorna um token JWT junto com informações do administrador
+// @Tags Login
+// @Accept  json
+// @Produce  json
+// @Param   loginDTO body    DTOs.LoginDTO true  "Credenciais de Login"
+// @Success 200 {object} model_views.AdmTokenView "Retorna o token JWT e informações do administrador"
+// @Failure 400 {object} model_views.ErrorResponse "Email ou senha inválido ou erro ao gerar token"
+// @Router /login [post]
 func (hc *LoginController) Login(c *gin.Context) {
 	var loginDTO DTOs.LoginDTO
 
 	if err := c.BindJSON(&loginDTO); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, model_views.ErrorResponse{
+			Erro: err.Error(),
+		})
 		return
 	}
 
@@ -31,8 +43,8 @@ func (hc *LoginController) Login(c *gin.Context) {
 	adms, erro := servico.Repo.Where(credenciais)
 
 	if erro != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"erro": erro.Error(),
+		c.JSON(http.StatusBadRequest, model_views.ErrorResponse{
+			Erro: erro.Error(),
 		})
 		return
 	}
@@ -41,24 +53,24 @@ func (hc *LoginController) Login(c *gin.Context) {
 		adm := adms[0]
 		token, erro := tokenJwt(c, adm)
 		if erro != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": erro.Error(),
+			c.JSON(http.StatusBadRequest, model_views.ErrorResponse{
+				Erro: erro.Error(),
 			})
 		}
 
-		c.JSON(http.StatusOK, gin.H{
-			"token": token,
-			"id":    adm.Id,
-			"nome":  adm.Nome,
-			"email": adm.Email,
-			"super": adm.Super,
+		c.JSON(http.StatusOK, model_views.AdmTokenView{
+			Token: token,
+			Id:    adm.Id,
+			Nome:  adm.Nome,
+			Email: adm.Email,
+			Super: adm.Super,
 		})
 
 		return
 	}
 
-	c.JSON(http.StatusBadRequest, gin.H{
-		"error": "Email ou senha inválido",
+	c.JSON(http.StatusBadRequest, model_views.ErrorResponse{
+		Erro: "Email ou senha inválido",
 	})
 }
 

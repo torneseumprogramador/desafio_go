@@ -15,14 +15,14 @@ func AuthRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Cabeçalho de autorização não fornecido"})
+			c.JSON(http.StatusUnauthorized, model_views.ErrorResponse{Erro: "Cabeçalho de autorização não fornecido"})
 			c.Abort()
 			return
 		}
 
 		bearerToken := strings.Split(authHeader, " ")
 		if len(bearerToken) != 2 || bearerToken[0] != "Bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Formato de autorização inválido"})
+			c.JSON(http.StatusUnauthorized, model_views.ErrorResponse{Erro: "Formato de autorização inválido"})
 			c.Abort()
 			return
 		}
@@ -39,7 +39,7 @@ func AuthRequired() gin.HandlerFunc {
 		})
 
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Token inválido"})
+			c.JSON(http.StatusUnauthorized, model_views.ErrorResponse{Erro: "Token inválido"})
 			c.Abort()
 			return
 		}
@@ -51,14 +51,14 @@ func AuthRequired() gin.HandlerFunc {
 			super, superOk := claims["super"].(bool)
 
 			if !nomeOk || !emailOk || !idOk || !superOk {
-				c.JSON(http.StatusUnauthorized, gin.H{"error": "Falha ao processar claims do token"})
+				c.JSON(http.StatusUnauthorized, model_views.ErrorResponse{Erro: "Falha ao processar claims do token"})
 				c.Abort()
 				return
 			}
 
 			currentRoute := c.FullPath()
 			if !super && strings.Contains(currentRoute, "administradores") {
-				c.JSON(http.StatusForbidden, gin.H{"error": "Usuário sem acesso a esta área"})
+				c.JSON(http.StatusForbidden, model_views.ErrorResponse{Erro: "Usuário sem acesso a esta área"})
 				c.Abort()
 				return
 			}
@@ -74,7 +74,7 @@ func AuthRequired() gin.HandlerFunc {
 
 			c.Next()
 		} else {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Token JWT inválido ou expirado"})
+			c.JSON(http.StatusUnauthorized, model_views.ErrorResponse{Erro: "Token JWT inválido ou expirado"})
 			c.Abort()
 			return
 		}

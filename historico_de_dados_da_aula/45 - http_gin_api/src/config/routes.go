@@ -4,17 +4,24 @@ import (
 	"http_gin/src/controllers"
 	"http_gin/src/middlewares"
 
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
 	"github.com/gin-gonic/gin"
 )
 
-func Routes(r *gin.Engine) {
+func Routes(router *gin.Engine) {
+	router.Static("/docs/", "./docs")
+	url := ginSwagger.URL("/docs/swagger.json")
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
+
 	homeController := controllers.HomeController{}
-	r.GET("/", homeController.Index)
+	router.GET("/", homeController.Index)
 
 	loginController := controllers.LoginController{}
-	r.POST("/login", loginController.Login)
+	router.POST("/login", loginController.Login)
 
-	protectedRoutes := r.Group("/").Use(middlewares.AuthRequired())
+	protectedRoutes := router.Group("/").Use(middlewares.AuthRequired())
 	{
 		petsController := controllers.PetsController{}
 		protectedRoutes.GET("/pets", petsController.Index)

@@ -1,0 +1,226 @@
+basePath: /
+definitions:
+  dtos.LoginDto:
+    properties:
+      email:
+        type: string
+      senha:
+        type: string
+    type: object
+  dtos.RecursoDTO:
+    properties:
+      nome:
+        type: string
+      valor:
+        type: number
+    type: object
+  models.Recurso:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      nome:
+        type: string
+      updated_at:
+        type: string
+      valor:
+        type: number
+    type: object
+  modelviews.AdmToken:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      nome:
+        type: string
+      token:
+        type: string
+    type: object
+  modelviews.HomeView:
+    properties:
+      doc:
+        type: string
+      mensagem:
+        type: string
+    type: object
+host: localhost:3000
+info:
+  contact:
+    email: suporte@torneseumprogramador.com.br
+    name: Danilo Aparecido
+    url: https://www.torneseumprogramador.com.br/cursos/desafio_go_lang
+  description: Este é um app construido junto com os alunos do torne-se um programador,
+    com objetivo em aprender a linguagem Golang e seus componentes
+  title: Desafio de Golang
+  version: "1.0"
+paths:
+  /:
+    get:
+      consumes:
+      - application/json
+      description: Mostrar dados sobre a API quando acessar a rota /
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/modelviews.HomeView'
+      summary: Apresentação da API
+      tags:
+      - Home
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Autentica um administrador e retorna um token JWT
+      parameters:
+      - description: Informações de Login
+        in: body
+        name: loginDto
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.LoginDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Token de autenticação
+          schema:
+            $ref: '#/definitions/modelviews.AdmToken'
+        "400":
+          description: Erro ao analisar o corpo da requisição
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Credenciais inválidas
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Login do Administrador
+      tags:
+      - Login
+  /recursos:
+    get:
+      consumes:
+      - application/json
+      description: Retorna uma lista de todos os recursos
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Recurso'
+            type: array
+      security:
+      - Bearer: []
+      summary: Lista todos os recursos
+      tags:
+      - Recursos
+    post:
+      consumes:
+      - application/json
+      description: Cria um novo recurso com as informações fornecidas
+      parameters:
+      - description: Informações do Recurso
+        in: body
+        name: recurso
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.RecursoDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Recurso'
+      security:
+      - Bearer: []
+      summary: Cria um novo recurso
+      tags:
+      - Recursos
+  /recursos/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Exclui o recurso com o ID fornecido
+      parameters:
+      - description: ID do Recurso
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      security:
+      - Bearer: []
+      summary: Exclui um recurso
+      tags:
+      - Recursos
+    get:
+      consumes:
+      - application/json
+      description: Retorna detalhes de um recurso específico pelo ID
+      parameters:
+      - description: ID do Recurso
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Recurso'
+      security:
+      - Bearer: []
+      summary: Mostra um recurso
+      tags:
+      - Recursos
+    put:
+      consumes:
+      - application/json
+      description: Atualiza o recurso com o ID fornecido
+      parameters:
+      - description: ID do Recurso
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Informações atualizadas do Recurso
+        in: body
+        name: recurso
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.RecursoDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Recurso'
+      security:
+      - Bearer: []
+      summary: Atualiza um recurso
+      tags:
+      - Recursos
+securityDefinitions:
+  Bearer:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
