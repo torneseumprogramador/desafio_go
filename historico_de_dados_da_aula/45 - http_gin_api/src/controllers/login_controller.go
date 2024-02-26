@@ -87,7 +87,7 @@ func (hc *LoginController) ValidarLogin(c *gin.Context) {
 }
 
 func tokenJwt(c *gin.Context, adm models.Administrador) (string, error) {
-	tempoExpiracao := time.Now().Add(time.Second * 10)
+	tempoExpiracao := time.Now().Add(time.Hour * 1)
 
 	token := jwt.New(jwt.SigningMethodHS256)
 
