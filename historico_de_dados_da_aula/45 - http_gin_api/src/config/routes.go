@@ -23,6 +23,8 @@ func Routes(router *gin.Engine) {
 
 	protectedRoutes := router.Group("/").Use(middlewares.AuthRequired())
 	{
+		protectedRoutes.HEAD("/login/validar", loginController.ValidarLogin)
+
 		petsController := controllers.PetsController{}
 		protectedRoutes.GET("/pets", petsController.Index)
 		protectedRoutes.POST("/pets", petsController.Cadastrar)

@@ -14,6 +14,7 @@ import (
 func AuthRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
+
 		if authHeader == "" {
 			c.JSON(http.StatusUnauthorized, model_views.ErrorResponse{Erro: "Cabeçalho de autorização não fornecido"})
 			c.Abort()

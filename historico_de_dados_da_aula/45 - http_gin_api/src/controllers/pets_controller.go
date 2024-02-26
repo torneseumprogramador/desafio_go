@@ -179,7 +179,7 @@ func (pc *PetsController) Alterar(c *gin.Context) {
 
 	erroAlterar := servico.Repo.Alterar(*petDb)
 
-	if erroAlterar == nil {
+	if erroAlterar != nil {
 		c.JSON(http.StatusBadRequest, model_views.ErrorResponse{
 			Erro: erroAlterar.Error(),
 		})

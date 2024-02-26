@@ -176,7 +176,7 @@ func (pc *DonosController) Alterar(c *gin.Context) {
 
 	erroAlterar := servico.Repo.Alterar(*donoDb)
 
-	if erroAlterar == nil {
+	if erroAlterar != nil {
 		c.JSON(http.StatusBadRequest, model_views.ErrorResponse{
 			Erro: erroAlterar.Error(),
 		})

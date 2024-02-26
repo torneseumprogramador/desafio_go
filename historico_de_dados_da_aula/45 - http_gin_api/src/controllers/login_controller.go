@@ -74,8 +74,20 @@ func (hc *LoginController) Login(c *gin.Context) {
 	})
 }
 
+// @Summary ValidarLogin
+// @Description Verifica se token é valido
+// @Tags Login
+// @Accept  json
+// @Produce  json
+// @Success 204
+// @Failure 401 {object} model_views.ErrorResponse "Token inválido"
+// @Router /login [post]
+func (hc *LoginController) ValidarLogin(c *gin.Context) {
+	c.JSON(http.StatusNoContent, model_views.ErrorResponse{})
+}
+
 func tokenJwt(c *gin.Context, adm models.Administrador) (string, error) {
-	tempoExpiracao := time.Now().Add(time.Hour * 1)
+	tempoExpiracao := time.Now().Add(time.Second * 10)
 
 	token := jwt.New(jwt.SigningMethodHS256)
 
