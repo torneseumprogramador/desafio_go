@@ -26,6 +26,7 @@
             <li class="nav-item"><Link class={`nav-link ${currentPath === '/donos' ? 'active' : ''}`} on:click={() => clickMenu('/donos')} to="donos">Donos</Link></li>
             <li class="nav-item"><Link class={`nav-link ${currentPath === '/pets' ? 'active' : ''}`} on:click={() => clickMenu('/pets')} to="pets">Pets</Link></li>
             <li class="nav-item"><Link class={`nav-link ${currentPath === '/administradores' ? 'active' : ''}`} on:click={() => clickMenu('/administradores')} to="administradores">Administradores</Link></li>
+            <li class="nav-item"><Link class={`nav-link ${currentPath === '/recursos' ? 'active' : ''}`} on:click={() => clickMenu('/recursos')} to="recursos">Recursos</Link></li>
             <li class="nav-item"><button class="nav-link" on:click={sair}>Sair</button></li>
           </ul>
         </div>

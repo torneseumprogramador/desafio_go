@@ -59,3 +59,7 @@ func (pc *LoginController) Login(c *fiber.Ctx) error {
 
 	return c.Status(200).JSON(admToken)
 }
+
+func (pc *LoginController) ValidarLogin(c *fiber.Ctx) error {
+	return c.Status(204).JSON(fiber.Map{})
+}

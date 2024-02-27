@@ -22,11 +22,13 @@
             const resultado = await resposta.json();
 
             if (!resposta.ok) {
-				mensagemErro = resultado.erro;
+				// mensagemErro = resultado.erro;
+				mensagemErro = resultado.mensagem;
 				return;
             }
 
-			localStorage.setItem('userToken', resultado.token);
+			// localStorage.setItem('userToken', resultado.token);
+			localStorage.setItem('userToken', resultado.Token);
             navigate('/');
         } catch (erro) {
             mensagemErro = erro.message;

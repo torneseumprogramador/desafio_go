@@ -11,6 +11,8 @@ func RegisterPublicRoutes(app *fiber.App) {
 	loginController := controllers.LoginController{}
 	app.Post("/login", loginController.Login)
 
+	app.Head("/login/validar", middleware.ProtectedJwtLowLevel(), loginController.ValidarLogin)
+
 	homeController := controllers.HomeController{}
 	app.Get("/", homeController.Index)
 
